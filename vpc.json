@@ -1,0 +1,86 @@
+
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template is for VPC",
+
+    "Parameters": {
+        "KeyName": {
+            "Description": "This key is used for ssh into EC2 instance",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "LatestAmiId": {
+            "Type": "AWS::SSM:Parameter::Value<AWS::EC2::Image::Id>",
+            "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+        }
+    },
+    "Resources": {
+        "vpc1": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.10.0.0/16",
+                "EnableDnsHostnames" : true,
+                "EnableDnsSupport" : true,
+                "InstanceTenancy" : "default",
+                "Tags": [ {"Key": "Name", "Value": "vpc1"} ]
+            }
+        },
+        "vpc2": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.11.0.0/16",
+                "EnableDnsHostnames" : true,
+                "EnableDnsSupport" : true,
+                "InstanceTenancy" : "default",
+                "Tags": [ {"Key": "Name", "Value": "vpc2"} ]
+            }
+        },
+        "vpc1snA1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {"Ref": "vpc1"},
+                "Tags": [ {"Key": "Name", "Value": "vpc1_subnet_public"} ],
+                "MapPublicIpOnLaunch" : true,
+                "AvailabilityZone" : {
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": ""
+                        }
+                    ]
+                },
+                "CidrBlock": "10.10.1.0/24"
+            }
+        },
+        "vpc1snA2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {"Ref": "vpc1"},
+                "Tags": [ {"Key": "Name", "Value": "vpc1_subnet_private"} ],
+                "MapPublicIpOnLaunch" : false,
+                "AvailabilityZone" : {
+                    "Fn::Select": [
+                        "0",
+                        {
+                            "Fn::GetAZs": ""
+                        }
+                    ]
+                },
+                "CidrBlock": "10.10.2.0/24"
+            }
+        },
+        "igwvpc1": {
+            "Type": "AWS::EC2::InternetGateway",
+            "DependsOn": "vpc1",
+            "Properties": {
+                "Tags": [ { "Key": "Name", "Value": "vpc1igw"} ]
+            }
+        },
+        "igwattachmentvpc1": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "InternetGatewayId": {"Ref": "igwvpc1"},
+                "VpcId": {"Ref": "vpc1"}
+            }
+        }
+    }
+}
