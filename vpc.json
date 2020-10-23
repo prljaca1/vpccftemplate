@@ -81,6 +81,24 @@
                 "InternetGatewayId": {"Ref": "igwvpc1"},
                 "VpcId": {"Ref": "vpc1"}
             }
-        }
+        },
+        "PublicRouteTable" : {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties" : {
+                "Tags" :[{"Key":"Name", "Value": "VPC1-Public-RT"}],
+                "VpcId" :{"Ref":"vpc1"}
+            }
+        },
+        "RouteTablePublicRoute" : {
+            "Type" :"AWS::EC2::Route",
+            "DependsOn" : "igwAttachmentvpc1",
+            "Properties" : {
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : {"Ref":"igwvpc1"},
+                "RouteTableId" : {"Ref":"VPC1-Public-RT"}
+            }
+        },
+        " "
+        
     }
 }
